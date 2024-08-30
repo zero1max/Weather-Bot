@@ -49,7 +49,7 @@ weather_conditions = {
 }
 
 def weather(city):
-    API_KEY = "faf1b0e5cc92c7c666c125b5c957e65f"
+    API_KEY = "YOUR_API_KEY"
     URL = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric&lang=ru"  # yoki lang=en
 
     response = requests.get(URL)
