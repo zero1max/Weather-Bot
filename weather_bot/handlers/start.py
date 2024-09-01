@@ -21,10 +21,10 @@ async def start_handler(msg: Message):
     await check_subscription(msg)
 
 async def check_subscription(message: Message):
-    channel_ids = ["@zero1max_channel", "@zeromaxs_movies"]  # Kanal username'lari yoki ID'lari
+    channel_ids = ["@first_channel", "@second_channel"]  # Kanal username'lari yoki ID'lari
     channel_urls = {
-        "@zero1max_channel": "https://t.me/zero1max_channel",
-        "@zeromaxs_movies": "https://t.me/zeromaxs_movies"
+        "@zero1max_channel": "https://t.me/first_channel",
+        "@zeromaxs_movies": "https://t.me/second_channel"
     }
     user_id = message.from_user.id
     subscribed_channels = set()  # Obuna bo'lgan kanallar ro'yxati
