@@ -1,6 +1,6 @@
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.filters import CommandStart
-from loader import router
+from loader import router, db, bot
 from aiogram import F
 from keyboards.Inline_Keyboards.keyboards import  menu, ortga
 from aiogram.types import CallbackQuery
@@ -9,9 +9,53 @@ from request_api import weather
 
 @router.message(CommandStart())
 async def start_handler(msg: Message):
+    full_name = msg.from_user.full_name
+    surname = msg.from_user.last_name or ''
+    user_id = msg.from_user.id
+
+    db.create_table()
+    db.add_user(user_id, full_name, surname)
+
     await msg.answer_sticker('CAACAgIAAxkBAAID5mXZuHK0vG10IaptGi101X_oTKo4AAIiAQACpkRICxH1ucyPFfRmNAQ')
     await msg.answer(f"Assalomu aleykum {msg.from_user.full_name}!😊")
-    await msg.answer(f"Shahringiz ob-havosini tanlang:👇🏻", reply_markup=menu)
+    await check_subscription(msg)
+
+async def check_subscription(message: Message):
+    channel_ids = ["@zero1max_channel", "@zeromaxs_movies"]  # Kanal username'lari yoki ID'lari
+    channel_urls = {
+        "@zero1max_channel": "https://t.me/zero1max_channel",
+        "@zeromaxs_movies": "https://t.me/zeromaxs_movies"
+    }
+    user_id = message.from_user.id
+    subscribed_channels = set()  # Obuna bo'lgan kanallar ro'yxati
+
+    # Har bir kanalni tekshirib chiqamiz
+    for channel_id in channel_ids:
+        try:
+            member = await bot.get_chat_member(chat_id=channel_id, user_id=user_id)
+            if member.status != 'left':
+                subscribed_channels.add(channel_id)  # Obuna bo'lgan kanallar ro'yxatiga qo'shamiz
+        except Exception as e:
+            print(f"Kanal tekshirishda xatolik: {channel_id} - {e}")
+
+    # Obuna bo'lmagan kanallarni aniqlaymiz
+    not_subscribed_channels = set(channel_ids) - subscribed_channels
+
+    # `inline_keyboard` ro'yxatini yaratamiz
+    inline_keyboard = []
+
+    for channel_id in not_subscribed_channels:
+        inline_keyboard.append([InlineKeyboardButton(text=f"{channel_id[1:]}", url=channel_urls[channel_id])])
+
+    markup = InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
+
+    if not_subscribed_channels:
+        await message.answer(
+            "Kanallarga obuna bo'lishingizni so'raymiz.\nObuna bo'lgandan so'ng /start buyrug'ini yuboring!\nIltimos, quyidagi kanallarga obuna bo'ling:👇🏻",
+            reply_markup=markup
+        )
+    else:
+        await message.answer(f"Shahringiz ob-havosini tanlang:👇🏻", reply_markup=menu)
 
 
 @router.callback_query(F.data=='tosh')
